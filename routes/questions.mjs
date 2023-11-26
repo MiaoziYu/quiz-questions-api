@@ -14,7 +14,10 @@ router.get("/", async (req, res) => {
       userId = null,
 
       incorrect = "false",
-      newQuestion = "false"
+      newQuestion = "false",
+
+      limit = "2",
+      last = null,
     }
   } = req;
 
@@ -26,37 +29,36 @@ router.get("/", async (req, res) => {
   let query = {
     // tag
     ... (tag ? { tag } : {}),
+    ... (last ? { $and: [{ _id: { $gt: ObjectId(last) } }] } : {})
   };
 
   if (userStats) {
     if (incorrect.toLowerCase() === 'true') {
-      query = {
-        ...query,
+      query.$and = [].concat(query.$and ? query.$and : []).concat({
         _id: {
           $in: [
             ...Object.values(userStats.incorrectQuestionIds).flat().map((id) => ObjectId(id))
           ]
         }
-      }
+      })
     } else if (newQuestion.toLowerCase() === 'true') {
-      query = {
-        ...query,
+      query.$and = [].concat(query.$and ? query.$and : []).concat({
         _id: {
           $nin: [
             ...Object.values(userStats.correctQuestionIds).flat().map((id) => ObjectId(id)),
             ...Object.values(userStats.incorrectQuestionIds).flat().map((id) => ObjectId(id))
           ]
         }
-      }
+      })
     }
   }
 
   try {
     const results = await qColl.find(query)
-      .limit(10)
+      .limit(parseInt(limit))
       .toArray();
 
-    res.json(results).status(200);
+    res.json({ data: results, meta: { last: results.length ? results[results.length - 1]._id : null } }).status(200);
   } catch (error) {
     console.log(error)
     throw new Error(error.message);
