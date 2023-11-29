@@ -13,10 +13,9 @@ router.get("/", async (req, res) => {
       tag = null,
       userId = null,
 
-      incorrect = "false",
-      newQuestion = "false",
+      undone = "true",
 
-      limit = "2",
+      limit = "1",
       last = null,
     }
   } = req;
@@ -33,20 +32,11 @@ router.get("/", async (req, res) => {
   };
 
   if (userStats) {
-    if (incorrect.toLowerCase() === 'true') {
-      query.$and = [].concat(query.$and ? query.$and : []).concat({
-        _id: {
-          $in: [
-            ...Object.values(userStats.incorrectQuestionIds).flat().map((id) => ObjectId(id))
-          ]
-        }
-      })
-    } else if (newQuestion.toLowerCase() === 'true') {
+    if (undone.toLowerCase() === 'true') {
       query.$and = [].concat(query.$and ? query.$and : []).concat({
         _id: {
           $nin: [
-            ...Object.values(userStats.correctQuestionIds).flat().map((id) => ObjectId(id)),
-            ...Object.values(userStats.incorrectQuestionIds).flat().map((id) => ObjectId(id))
+            ...Object.values(userStats.correctQuestionIds).flat().map((id) => ObjectId(id))
           ]
         }
       })
