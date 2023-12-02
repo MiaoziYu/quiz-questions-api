@@ -16,7 +16,6 @@ router.get("/", async (req, res) => {
       undone = "true",
 
       limit = "1",
-      last = null,
     }
   } = req;
 
@@ -28,7 +27,6 @@ router.get("/", async (req, res) => {
   let query = {
     // tag
     ... (tag ? { tag } : {}),
-    ... (last ? { $and: [{ _id: { $gt: ObjectId(last) } }] } : {})
   };
 
   if (userStats) {
@@ -43,12 +41,19 @@ router.get("/", async (req, res) => {
     }
   }
 
-  try {
-    const results = await qColl.find(query)
-      .limit(parseInt(limit))
-      .toArray();
+  const pipeline = [
+    {
+      $match: query,
+    },
+    {
+      $sample: { size: parseInt(limit) }
+    }
+  ];
 
-    res.json({ data: results, meta: { last: results.length ? results[results.length - 1]._id : null } }).status(200);
+  try {
+    const results = (await qColl.aggregate(pipeline).toArray());
+
+    return res.json(results).status(200);
   } catch (error) {
     console.log(error)
     throw new Error(error.message);
