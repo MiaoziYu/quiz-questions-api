@@ -72,4 +72,19 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+router.get("/", async (req, res) => {
+  try {
+    const tags = await getTags();
+
+    const data = {
+      tags,
+    }
+
+    res.json(data).status(200);
+  } catch (error) {
+    console.log(error)
+    throw new Error(error.message);
+  }
+});
+
 export default router;

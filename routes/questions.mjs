@@ -12,9 +12,7 @@ router.get("/", async (req, res) => {
     query: {
       tag = null,
       userId = null,
-
-      undone = "true",
-
+      undone = "false",
       limit = "1",
     }
   } = req;
