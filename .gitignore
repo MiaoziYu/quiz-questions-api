@@ -3,3 +3,4 @@ yarn.lock
 config.env
 .env
 .vscode
+.vercel
